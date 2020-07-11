@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  gainfo:
+    runs-on: ubuntu-latest
+    outputs:
+      GITHUB_REPOSITORY_LOWERCASE: ${{ steps.mainstep.outputs.GITHUB_REPOSITORY_LOWERCASE }}
+      BRANCH_NAME: ${{ steps.mainstep.outputs.BRANCH_NAME }}
+      DOCKER_TAG_VERSION: ${{ steps.mainstep.outputs.DOCKER_TAG_VERSION }}
+      FULL_REPO_SLUG: ${{ steps.mainstep.outputs.FULL_REPO_SLUG }}
+    steps:
+      - run: echo $GITHUB_REPOSITORY
+      - run: echo $GITHUB_REF
+      - run: echo $GITHUB_HEAD_REF
+      - run: echo $GITHUB_BASE_REF
+      - run: echo $GITHUB_WORKSPACE
+      - run: echo $GITHUB_EVENT_NAME
+      - run: echo $GITHUB_RUN_NUMBER
+      - run: echo $GITHUB_RUN_ID
+      - name: Git checkout
+        uses: actions/checkout@v1
+      - name: Set custom env variables
+        run: |
+          set -x
+          GITHUB_REPOSITORY_LOWERCASE=`echo $GITHUB_REPOSITORY | awk '{print tolower($0)}'`
+          echo ::set-env name=GITHUB_REPOSITORY_LOWERCASE::$(echo $GITHUB_REPOSITORY_LOWERCASE)
+
+          if [[ -z "$GITHUB_HEAD_REF" ]] # is set only if pipeline run is triggered as pull request
+          then
+            BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+            echo "Setting BRANCH_NAME=$BRANCH_NAME because this pipeline is run as Push"
+          else
+            BRANCH_NAME=$GITHUB_HEAD_REF
+            echo "Setting BRANCH_NAME=$BRANCH_NAME because this pipeline is run as Pull Request"
+          fi
+
+          FULL_REPO_SLUG=`echo "${{github.event.pull_request.head.repo.full_name}}" | sed "s/[^[:alnum:]-]//g" | tr '[:upper:]' '[:lower:]'` # lowercase, only alphanumeric and dash
+          echo ::set-env name=FULL_REPO_SLUG::$(echo $FULL_REPO_SLUG)
+
+          BRANCH_NAME=`echo $BRANCH_NAME | sed "s/[^[:alnum:]-]//g" | tr '[:upper:]' '[:lower:]'` # lowercase, only alphanumeric and dash
+          echo ::set-env name=BRANCH_NAME::$(echo $BRANCH_NAME)
+
+          git --version
+          git tag
+          REPO_VERSION_HIGHEST=$(git describe --tags --always --abbrev=0)
+          echo ::set-env name=REPO_VERSION_HIGHEST::$(echo $REPO_VERSION_HIGHEST)
+          echo "Highest released version was $REPO_VERSION_HIGHEST"
+
+          REPO_VERSION_DESIRED=`bash ./get-version.sh`
+          echo ::set-env name=REPO_VERSION_DESIRED::$(echo $REPO_VERSION_DESIRED)
+          echo "Repo declares version $REPO_VERSION_DESIRED"
+
+          if [[ "master" == "$BRANCH_NAME" ]]
+          then
+             if [[ "$REPO_VERSION_HIGHEST" == "$REPO_VERSION_DESIRED" ]]
+             then
+                DOCKER_TAG_VERSION="$BRANCH_NAME"
+                echo "Version was not bumped"
+             else
+                # DOCKER_TAG_VERSION="$REPO_VERSION_DESIRED"
+                DOCKER_TAG_VERSION="$BRANCH_NAME"
+                echo "Version was bumped $REPO_VERSION_HIGHEST->$REPO_VERSION_DESIRED"
+             fi
+          else
+             DOCKER_TAG_VERSION="$FULL_REPO_SLUG-$BRANCH_NAME"
+          fi
+          echo ::set-env name=DOCKER_TAG_VERSION::$(echo $DOCKER_TAG_VERSION)
+          echo "Will be using docker tag $DOCKER_TAG_VERSION"
+
+      - name: Check custom env variables
+        id: mainstep
+        run: |
+          set -x
+          echo "::set-output name=GITHUB_REPOSITORY_LOWERCASE::$GITHUB_REPOSITORY_LOWERCASE"
+          echo "::set-output name=BRANCH_NAME::$BRANCH_NAME"
+          echo "::set-output name=DOCKER_TAG_VERSION::$DOCKER_TAG_VERSION"
+          echo "::set-output name=FULL_REPO_SLUG::$FULL_REPO_SLUG"
+
+
+  print-custom-variables:
+    needs: gainfo
+    runs-on: ubuntu-16.04
+    env:
+      DOCKER_BUILDKIT: 1
+    steps:
+      - name: Load up custom variables
+        run: |
+          echo ::set-env name=GITHUB_REPOSITORY_LOWERCASE::$(echo ${{needs.gainfo.outputs.GITHUB_REPOSITORY_LOWERCASE}})
+          echo ::set-env name=BRANCH_NAME::$(echo ${{needs.gainfo.outputs.BRANCH_NAME}})
+          echo ::set-env name=DOCKER_TAG_VERSION::$(echo ${{needs.gainfo.outputs.DOCKER_TAG_VERSION}})
+          echo ::set-env name=FULL_REPO_SLUG::$(echo ${{needs.gainfo.outputs.FULL_REPO_SLUG}})
+      - name: Print custom variables
+        run: |
+          echo $GITHUB_REPOSITORY_LOWERCASE
+          echo $BRANCH_NAME
+          echo $DOCKER_TAG_VERSION
+          echo $FULL_REPO_SLUG
