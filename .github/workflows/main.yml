@@ -131,11 +131,11 @@ jobs:
           if [[ "$RELEASE_VERSION" ]]
           then
             echo "Releasing $RELEASE_VERSION"
-            curl --request POST \
+            curl -v --request POST \
                 --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
                 --header "Content-Type: application/json" \
                 -d "{\"tag_name\": "v$RELEASE_VERSION", \"name\": "v$RELEASE_VERSION", \"name\": "Release v$RELEASE_VERSION" }" \
-                --url https://github.com/$GITHUB_REPOSITORY/releases
+                --url https://api.github.com/$GITHUB_REPOSITORY/releases
           else
              echo "Not releasing"
           fi
