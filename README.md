@@ -1,2 +1,2 @@
 # ga-sandbox
-Playing around with github actions
+Playing around with github actions.
