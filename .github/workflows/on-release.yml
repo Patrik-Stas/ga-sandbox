@@ -11,7 +11,8 @@ jobs:
       - name: Print on release
         run: |
           echo "This was trigerred per release event!"
-          echo "${{ github.event_name}}"
-          echo "echo ${{ toJson(github.event) }}"
+          echo "Event name = ${{ github.event_name}}"
+          echo "Github context = ${{ toJson(github) }}"
+          echo "Event info ${{ toJson(github.event) }}"
 
 
