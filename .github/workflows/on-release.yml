@@ -1,0 +1,17 @@
+name: CI
+
+on:
+  release:
+    [published]
+
+jobs:
+  on-push-info:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print on release
+        run: |
+          echo "This was trigerred per release event!"
+          echo "${{ github.event_name}}"
+          echo "echo "${{github.event}}"
+
+
