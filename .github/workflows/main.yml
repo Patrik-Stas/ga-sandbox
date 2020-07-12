@@ -135,7 +135,7 @@ jobs:
                 --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
                 --header "Content-Type: application/json" \
                 -d "{\"tag_name\": "v$RELEASE_VERSION", \"name\": "v$RELEASE_VERSION", \"name\": "Release v$RELEASE_VERSION" }" \
-                --url https://api.github.com/$GITHUB_REPOSITORY/releases
+                --url https://api.github.com/repos/$GITHUB_REPOSITORY/releases
           else
              echo "Not releasing"
           fi
