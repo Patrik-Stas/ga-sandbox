@@ -137,7 +137,7 @@ jobs:
                 -d "{\"tag_name\": \"$RELEASE_VERSION\", \"name\": \"$RELEASE_VERSION\", \"body\": \"Automatic release $RELEASE_VERSION\" }" \
                 --url https://api.github.com/repos/$GITHUB_REPOSITORY/releases
           else
-             echo "Not releasing."
+             echo "Not releasing!"
           fi
 
 
