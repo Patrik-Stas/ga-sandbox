@@ -2,7 +2,7 @@ name: CI-on-release
 
 on:
   release:
-    [published]
+    types: [published]
 
 jobs:
   on-push-info:
@@ -12,6 +12,6 @@ jobs:
         run: |
           echo "This was trigerred per release event!"
           echo "${{ github.event_name}}"
-          echo "echo ${{github.event}}"
+          echo "echo ${{ toJson(github.event) }}"
 
 

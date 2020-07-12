@@ -13,6 +13,6 @@ jobs:
         run: |
           echo "This was trigerred per push event!"
           echo "${{ github.event_name}}"
-          echo "echo ${{github.event}}"
+          echo "echo ${{ toJson(github.event) }}"
 
 
