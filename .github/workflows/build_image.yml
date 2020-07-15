@@ -30,13 +30,13 @@ jobs:
           echo ::set-env name=BRANCH_NAME::$(echo $BRANCH_NAME)
       - name: Git checkout
         uses: actions/checkout@v1
-      - name: Cache image
+      - name: Cache image.
         id: cache-image
         uses: actions/cache@v2
         with:
           path: built-image
           key: $FULL_REPO_SLUG
-      - name: Build and cache image
+      - name: Build and cache image.
         if: steps.cache-image.outputs.cache-hit != 'true'
         run: |
           set -x
