@@ -153,7 +153,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/imgcache
-          key: $CACHE_KEY
+          key: ${{ env.CACHE_KEY }}
       - name: If no cached image found
         if: steps.load-cached-image.outputs.cache-hit != 'true'
         run: |
@@ -162,7 +162,7 @@ jobs:
       - name: Load image
         if: steps.load-cached-image.outputs.cache-hit == 'true'
         run: |
-          echo "CACHE HIT: $CACHE_KEY"
+          echo "CACHE HIT: ${{ env.CACHE_KEY }}"
           ls -lah /tmp/imgcache/
           docker load < /tmp/imgcache/hello_world.tar
           docker image ls
