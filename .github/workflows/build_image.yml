@@ -1,0 +1,25 @@
+name: CI-main
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v1
+      - name: Set custom env variables
+        run: |
+          set -x
+          echo "building"
+          docker build -t hello_world:123 .
+
+
+
+
