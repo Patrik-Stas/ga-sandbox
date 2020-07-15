@@ -115,7 +115,7 @@ jobs:
         if: steps.cache-image.outputs.cache-hit != 'true'
         run: |
           - echo "CACHE MISS!"
-      - name: If found in cache, load image
+      - name: If found in cache, load image.
         if: steps.cache-image.outputs.cache-hit == 'true'
         run: |
           echo "CACHE HIT, loading image!"
@@ -126,7 +126,7 @@ jobs:
           set -x
           docker image ls
           docker build -t hello_world:$BRANCH_NAME .
-      - name: Store built image in cache
+      - name: Store built image in cache.
         run: |
           set -x
           docker image ls
