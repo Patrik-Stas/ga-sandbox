@@ -35,28 +35,23 @@ jobs:
         uses: actions/cache@v2
         with:
           path: built-image
-          key: ${{ github.sha }}
-      - name: Set custom env variables
+          key: $BRANCH_NAME
+      - name: Build and cache image
+        if: steps.cache-image.outputs.cache-hit != 'true'
         run: |
           set -x
           echo "building"
           docker build -t hello_world:$BRANCH_NAME .
-      - name: Print file if found in cache
+          docker save hello_world:$BRANCH_NAME > built-image/hello_world.tar
+      - name: If found in cache, print and load
         if: steps.cache-image.outputs.cache-hit == 'true'
         run: |
-          mkdir -p built-image
-          ls -lah
-          cat built-image/foo.txt
-      - name: Create file if not found in cache.
-        if: steps.cache-image.outputs.cache-hit != 'true'
+          ls -lah built-image/
+          docker load < built-image/hello_world.tar
+      - name: Run image!
         run: |
-          mkdir built-image
-          ls -lah
-          echo "this should be cached ${{ github.sha }}" > built-image/foo.txt
-      - name: Print file for sure.
-        run: |
-          ls -lah
-          cat built-image/foo.txt
+          docker ls
+          docker run hello_world:$BRANCH_NAME
 
 
 
