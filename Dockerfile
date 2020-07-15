@@ -1,2 +1,11 @@
 FROM ubuntu:18.04
-CMD echo hello
+
+WORKDIR /tmp/dockertest
+
+CMD mkdir /tmp/dockertest/foo1
+CMD mkdir /tmp/dockertest/foo2
+CMD mkdir /tmp/dockertest/foo3
+CMD mkdir /tmp/dockertest/foo3
+CMD mkdir /tmp/dockertest/foo4
+
+CMD ls -lah /tmp/dockertest/
