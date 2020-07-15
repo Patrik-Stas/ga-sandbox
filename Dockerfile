@@ -6,6 +6,6 @@ RUN groupadd -g 1001 app && \
 WORKDIR /home/app/samplesrc
 
 COPY --chown=app:app ./samplesrc/file-bar.js ./file-bar.js
-#COPY --chown=app:app ./samplesrc/file-foo.js ./file-foo.js
+COPY --chown=app:app ./samplesrc/file-foo.js ./file-foo.js
 
 CMD ls -lah /home/app/samplesrc
