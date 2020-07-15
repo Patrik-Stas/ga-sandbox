@@ -42,11 +42,11 @@ jobs:
           echo "building"
           docker build -t hello_world:$BRANCH_NAME .
       - name: Print file if found in cache
-          if: steps.cache-image.outputs.cache-hit == 'true'
-          run: |
-            mkdir built-image
-            ls -lah
-            cat built-image/foo.txt
+        if: steps.cache-image.outputs.cache-hit == 'true'
+        run: |
+          mkdir built-image
+          ls -lah
+          cat built-image/foo.txt
       - name: Create file if not found in cache
         if: steps.cache-image.outputs.cache-hit != 'true'
         run: |
