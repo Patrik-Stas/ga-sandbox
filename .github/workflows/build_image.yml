@@ -114,16 +114,25 @@ jobs:
       - name: If NOT found in cache, Build and cache image.
         if: steps.cache-image.outputs.cache-hit != 'true'
         run: |
-          set -x
-          echo "building"
-          docker build -t hello_world:$BRANCH_NAME .
-          mkdir -p built-image
-          docker save hello_world:$BRANCH_NAME > built-image/hello_world.tar
-      - name: If found in cache, print and load
+          - echo "CACHE MISS!"
+      - name: If found in cache, load image
         if: steps.cache-image.outputs.cache-hit == 'true'
         run: |
+          echo "CACHE HIT, loading image!"
           ls -lah built-image/
           docker load < built-image/hello_world.tar
+      - name: Build image from Dockerfile
+        run: |
+          set -x
+          docker image ls
+          docker build -t hello_world:$BRANCH_NAME .
+      - name: If NOT found in cache, Build and cache image.
+        if: Store built iamge in cache
+        run: |
+          set -x
+          docker image ls
+          mkdir -p built-image
+          docker save hello_world:$BRANCH_NAME > built-image/hello_world.tar
 
   run-image:
     runs-on: ubuntu-latest
