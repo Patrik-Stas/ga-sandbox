@@ -126,8 +126,7 @@ jobs:
           set -x
           docker image ls
           docker build -t hello_world:$BRANCH_NAME .
-      - name: If NOT found in cache, Build and cache image.
-        if: Store built iamge in cache
+      - name: Store built image in cache
         run: |
           set -x
           docker image ls
