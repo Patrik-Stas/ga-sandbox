@@ -95,6 +95,8 @@ jobs:
 
   build-image:
     runs-on: ubuntu-latest
+    needs:
+      - workflow-setup
     steps:
       - name: Load up custom variables
         run: |
@@ -127,6 +129,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build-image
+      - workflow-setup
     steps:
       - name: Load up custom variables
         run: |
