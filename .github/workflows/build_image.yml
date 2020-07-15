@@ -12,11 +12,12 @@ jobs:
   workflow-setup:
     runs-on: ubuntu-latest
     outputs:
-      GITHUB_REPOSITORY_LOWERCASE: ${{ steps.mainstep.outputs.GITHUB_REPOSITORY_LOWERCASE }}
-      BRANCH_NAME: ${{ steps.mainstep.outputs.BRANCH_NAME }}
-      DOCKER_TAG_VERSION: ${{ steps.mainstep.outputs.DOCKER_TAG_VERSION }}
-      FULL_REPO_SLUG: ${{ steps.mainstep.outputs.FULL_REPO_SLUG }}
-      RELEASE_VERSION: ${{ steps.mainstep.outputs.RELEASE_VERSION }}
+      GITHUB_REPOSITORY_LOWERCASE: ${{ steps.setouputs.outputs.GITHUB_REPOSITORY_LOWERCASE }}
+      BRANCH_NAME: ${{ steps.setouputs.outputs.BRANCH_NAME }}
+      DOCKER_TAG_VERSION: ${{ steps.setouputs.outputs.DOCKER_TAG_VERSION }}
+      FULL_REPO_SLUG: ${{ steps.setouputs.outputs.FULL_REPO_SLUG }}
+      RELEASE_VERSION: ${{ steps.setouputs.outputs.RELEASE_VERSION }}
+      CACHE_KEY: ${{ steps.setouputs.outputs.CACHE_KEY }}
     steps:
       - run: echo $GITHUB_REPOSITORY
       - run: echo $GITHUB_REF
@@ -82,8 +83,8 @@ jobs:
           echo ::set-env name=DOCKER_TAG_VERSION::$(echo $DOCKER_TAG_VERSION)
           echo "Docker images built in this CI will be using tag '$DOCKER_TAG_VERSION'"
 
-      - name: Check custom env variables
-        id: mainstep
+      - name: Set job outputs
+        id: setouputs
         run: |
           set -x
           echo "::set-output name=GITHUB_REPOSITORY_LOWERCASE::$GITHUB_REPOSITORY_LOWERCASE"
@@ -91,7 +92,7 @@ jobs:
           echo "::set-output name=DOCKER_TAG_VERSION::$DOCKER_TAG_VERSION"
           echo "::set-output name=FULL_REPO_SLUG::$FULL_REPO_SLUG"
           echo "::set-output name=RELEASE_VERSION::$RELEASE_VERSION"
-
+          echo "::set-output name=CACHE_KEY::$(echo reposlug-$FULL_REPO_SLUG-branch-$BRANCH_NAME-hashfiles-${{ hashFiles('Dockerfile') }})"
 
   build-image:
     runs-on: ubuntu-latest
@@ -104,7 +105,10 @@ jobs:
           echo ::set-env name=BRANCH_NAME::$(echo ${{needs.workflow-setup.outputs.BRANCH_NAME}})
           echo ::set-env name=DOCKER_TAG_VERSION::$(echo ${{needs.workflow-setup.outputs.DOCKER_TAG_VERSION}})
           echo ::set-env name=FULL_REPO_SLUG::$(echo ${{needs.workflow-setup.outputs.FULL_REPO_SLUG}})
-          echo ::set-env name=CACHE_KEY::$(echo reposlug-$FULL_REPO_SLUG-branch-$BRANCH-hashfiles-${{ hashFiles('Dockerfile') }})
+          echo ::set-env name=CACHE_KEY::$(echo ${{needs.workflow-setup.outputs.CACHE_KEY}})
+      - name: Check cache_key
+        run: |
+          echo "$CACHE_KEY"
       - name: Git checkout
         uses: actions/checkout@v1
       - name: Cache image.
@@ -135,7 +139,10 @@ jobs:
           echo ::set-env name=BRANCH_NAME::$(echo ${{needs.workflow-setup.outputs.BRANCH_NAME}})
           echo ::set-env name=DOCKER_TAG_VERSION::$(echo ${{needs.workflow-setup.outputs.DOCKER_TAG_VERSION}})
           echo ::set-env name=FULL_REPO_SLUG::$(echo ${{needs.workflow-setup.outputs.FULL_REPO_SLUG}})
-          echo ::set-env name=CACHE_KEY::$(echo reposlug-$FULL_REPO_SLUG-branch-$BRANCH-hashfiles-${{ hashFiles('Dockerfile') }})
+          echo ::set-env name=CACHE_KEY::$(echo ${{needs.workflow-setup.outputs.CACHE_KEY}})
+      - name: Check cache_key
+        run: |
+          echo "$CACHE_KEY"
       - name: Load image cache.
         id: load-cached-image
         uses: actions/cache@v2
