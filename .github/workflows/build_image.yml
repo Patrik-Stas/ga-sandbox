@@ -31,11 +31,11 @@ jobs:
       - name: Git checkout
         uses: actions/checkout@v1
       - name: Cache image
-          id: cache-image
-          uses: actions/cache@v2
-          with:
-            path: builti-image
-            key: "$BRANCH_NAME"
+        id: cache-image
+        uses: actions/cache@v2
+        with:
+          path: builti-image
+          key: "$BRANCH_NAME"
       - name: Set custom env variables
         run: |
           set -x
