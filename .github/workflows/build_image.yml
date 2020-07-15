@@ -35,7 +35,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: built-image
-          key: $BRANCH_NAME
+          key: $FULL_REPO_SLUG
       - name: Build and cache image
         if: steps.cache-image.outputs.cache-hit != 'true'
         run: |
