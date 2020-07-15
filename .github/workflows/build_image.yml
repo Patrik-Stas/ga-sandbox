@@ -9,11 +9,31 @@ on:
       - "**"
 
 jobs:
-  build-image:
+  workflow-setup:
     runs-on: ubuntu-latest
+    outputs:
+      GITHUB_REPOSITORY_LOWERCASE: ${{ steps.mainstep.outputs.GITHUB_REPOSITORY_LOWERCASE }}
+      BRANCH_NAME: ${{ steps.mainstep.outputs.BRANCH_NAME }}
+      DOCKER_TAG_VERSION: ${{ steps.mainstep.outputs.DOCKER_TAG_VERSION }}
+      FULL_REPO_SLUG: ${{ steps.mainstep.outputs.FULL_REPO_SLUG }}
+      RELEASE_VERSION: ${{ steps.mainstep.outputs.RELEASE_VERSION }}
     steps:
-      - name:
+      - run: echo $GITHUB_REPOSITORY
+      - run: echo $GITHUB_REF
+      - run: echo $GITHUB_HEAD_REF
+      - run: echo $GITHUB_BASE_REF
+      - run: echo $GITHUB_WORKSPACE
+      - run: echo $GITHUB_EVENT_NAME
+      - run: echo $GITHUB_RUN_NUMBER
+      - run: echo $GITHUB_RUN_ID
+      - name: Git checkout
+        uses: actions/checkout@v1
+      - name: Set custom env variables
         run: |
+          set -x
+          GITHUB_REPOSITORY_LOWERCASE=`echo $GITHUB_REPOSITORY | awk '{print tolower($0)}'`
+          echo ::set-env name=GITHUB_REPOSITORY_LOWERCASE::$(echo $GITHUB_REPOSITORY_LOWERCASE)
+
           if [[ -z "$GITHUB_HEAD_REF" ]] # is set only if pipeline run is triggered as pull request
           then
             BRANCH_NAME="${GITHUB_REF#refs/heads/}"
@@ -28,6 +48,59 @@ jobs:
 
           BRANCH_NAME=`echo $BRANCH_NAME | sed "s/[^[:alnum:]-]//g" | tr '[:upper:]' '[:lower:]'` # lowercase, only alphanumeric and dash
           echo ::set-env name=BRANCH_NAME::$(echo $BRANCH_NAME)
+
+          RELEASE_VERSION=''
+
+          if [[ "${{ github.event_name}}" == "push" && "$BRANCH_NAME" == "master" ]]
+          then
+            echo "Running push on master branch. Release will happen if version was bumped."
+
+            REPO_VERSION_HIGHEST=$(git describe --tags --always --abbrev=0)
+            echo ::set-env name=REPO_VERSION_HIGHEST::$(echo $REPO_VERSION_HIGHEST)
+            echo "Highest released version was $REPO_VERSION_HIGHEST"
+
+            REPO_VERSION_DESIRED=`bash ./get-version.sh`
+            echo ::set-env name=REPO_VERSION_DESIRED::$(echo $REPO_VERSION_DESIRED)
+            echo "Repo declares version $REPO_VERSION_DESIRED"
+
+            if [[ "$REPO_VERSION_HIGHEST" == "$REPO_VERSION_DESIRED" ]]
+            then
+              DOCKER_TAG_VERSION="$BRANCH_NAME"
+              echo "Running push on master but version was not bumped. Will NOT release."
+            else
+              DOCKER_TAG_VERSION="$BRANCH_NAME"
+              RELEASE_VERSION="$REPO_VERSION_DESIRED"
+              DOCKER_TAG_VERSION="$REPO_VERSION_DESIRED"
+              echo "Running push on master, version was bumped $REPO_VERSION_HIGHEST->$RELEASE_VERSION. Will release $RELEASE_VERSION."
+            fi
+          else
+             DOCKER_TAG_VERSION="$FULL_REPO_SLUG-$BRANCH_NAME"
+             echo "This is not push to master. Will NOT release."
+          fi
+
+          echo ::set-env name=RELEASE_VERSION::$(echo $RELEASE_VERSION)
+          echo ::set-env name=DOCKER_TAG_VERSION::$(echo $DOCKER_TAG_VERSION)
+          echo "Docker images built in this CI will be using tag '$DOCKER_TAG_VERSION'"
+
+      - name: Check custom env variables
+        id: mainstep
+        run: |
+          set -x
+          echo "::set-output name=GITHUB_REPOSITORY_LOWERCASE::$GITHUB_REPOSITORY_LOWERCASE"
+          echo "::set-output name=BRANCH_NAME::$BRANCH_NAME"
+          echo "::set-output name=DOCKER_TAG_VERSION::$DOCKER_TAG_VERSION"
+          echo "::set-output name=FULL_REPO_SLUG::$FULL_REPO_SLUG"
+          echo "::set-output name=RELEASE_VERSION::$RELEASE_VERSION"
+
+
+  build-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Load up custom variables
+        run: |
+          echo ::set-env name=GITHUB_REPOSITORY_LOWERCASE::$(echo ${{needs.workflow-setup.outputs.GITHUB_REPOSITORY_LOWERCASE}})
+          echo ::set-env name=BRANCH_NAME::$(echo ${{needs.workflow-setup.outputs.BRANCH_NAME}})
+          echo ::set-env name=DOCKER_TAG_VERSION::$(echo ${{needs.workflow-setup.outputs.DOCKER_TAG_VERSION}})
       - name: Git checkout
         uses: actions/checkout@v1
       - name: Cache image.
@@ -55,6 +128,11 @@ jobs:
     needs:
       - build-image
     steps:
+      - name: Load up custom variables
+        run: |
+          echo ::set-env name=GITHUB_REPOSITORY_LOWERCASE::$(echo ${{needs.workflow-setup.outputs.GITHUB_REPOSITORY_LOWERCASE}})
+          echo ::set-env name=BRANCH_NAME::$(echo ${{needs.workflow-setup.outputs.BRANCH_NAME}})
+          echo ::set-env name=DOCKER_TAG_VERSION::$(echo ${{needs.workflow-setup.outputs.DOCKER_TAG_VERSION}})
       - name: Load image cache.
         id: load-cached-image
         uses: actions/cache@v2
