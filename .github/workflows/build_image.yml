@@ -111,7 +111,7 @@ jobs:
           echo "$CACHE_KEY"
       - name: Git checkout
         uses: actions/checkout@v1
-      - name: Cache image.
+      - name: Try load from cache.
         id: cache-image
         uses: actions/cache@v2
         with:
