@@ -9,7 +9,7 @@ on:
       - "**"
 
 jobs:
-  build:
+  build-image:
     runs-on: ubuntu-latest
     steps:
       - name:
@@ -45,6 +45,28 @@ jobs:
           mkdir -p built-image
           docker save hello_world:$BRANCH_NAME > built-image/hello_world.tar
       - name: If found in cache, print and load
+        if: steps.cache-image.outputs.cache-hit == 'true'
+        run: |
+          ls -lah built-image/
+          docker load < built-image/hello_world.tar
+
+  run-image:
+    runs-on: ubuntu-latest
+    needs:
+      - build-image
+    steps:
+      - name: Cache image.
+          id: cache-image
+          uses: actions/cache@v2
+          with:
+            path: built-image
+            key: $FULL_REPO_SLUG
+      - name: If no cached image found
+        if: steps.cache-image.outputs.cache-hit != 'true'
+        run: |
+          echo "Expected to find image from cache $FULL_REPO_SLUG"
+          - exit -1
+      - name: Load image
         if: steps.cache-image.outputs.cache-hit == 'true'
         run: |
           ls -lah built-image/
