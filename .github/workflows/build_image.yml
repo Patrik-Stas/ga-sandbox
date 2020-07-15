@@ -116,7 +116,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/imgcache
-          key: $CACHE_KEY
+          key: ${{ env.CACHE_KEY }}
       - name: If FOUND in cache, Print info.
         if: steps.cache-image.outputs.cache-hit == 'true'
         run: |
