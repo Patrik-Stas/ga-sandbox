@@ -73,6 +73,7 @@ jobs:
           docker load < built-image/hello_world.tar
       - name: Run image!!
         run: |
+          set -x
           docker image ls
           docker run hello_world:$BRANCH_NAME
 
