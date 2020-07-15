@@ -53,7 +53,7 @@ jobs:
           mkdir built-image
           ls -lah
           echo "this should be cached ${{ github.sha }}" > built-image/foo.txt
-      - name: Print file for sure
+      - name: Print file for sure.
         run: |
           ls -lah
           cat built-image/foo.txt
