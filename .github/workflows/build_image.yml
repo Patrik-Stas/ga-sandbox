@@ -35,7 +35,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: built-image
-          key: $BRANCH_NAME
+          key: ${{ github.sha }}
       - name: Set custom env variables
         run: |
           set -x
@@ -52,7 +52,7 @@ jobs:
         run: |
           mkdir built-image
           ls -lah
-          echo "this should be cached" > built-image/foo.txt
+          echo "this should be cached ${{ github.sha }}" > built-image/foo.txt
       - name: Print file for sure
         run: |
           ls -lah
