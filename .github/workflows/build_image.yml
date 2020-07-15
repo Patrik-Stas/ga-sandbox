@@ -44,7 +44,7 @@ jobs:
       - name: Print file if found in cache
         if: steps.cache-image.outputs.cache-hit == 'true'
         run: |
-          mkdir built-image
+          mkdir -p built-image
           ls -lah
           cat built-image/foo.txt
       - name: Create file if not found in cache.
