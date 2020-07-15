@@ -34,13 +34,21 @@ jobs:
         id: cache-image
         uses: actions/cache@v2
         with:
-          path: builti-image
+          path: built-image
           key: "$BRANCH_NAME"
       - name: Set custom env variables
         run: |
           set -x
           echo "building"
           docker build -t hello_world:$BRANCH_NAME .
+      - name: Create file if not found in cache
+          if: steps.cache-image.outputs.cache-hit != 'true'
+          run: echo "this should be cached" > built-image/foo.txt
+      - name: Print cached file
+        run: |
+          ls -lah
+          cat built-image/foo.txt
+
 
 
 
