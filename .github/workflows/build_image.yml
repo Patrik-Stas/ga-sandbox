@@ -36,7 +36,7 @@ jobs:
         with:
           path: built-image
           key: $FULL_REPO_SLUG
-      - name: Build and cache image.
+      - name: If NOT found in cache, Build and cache image.
         if: steps.cache-image.outputs.cache-hit != 'true'
         run: |
           set -x
@@ -51,7 +51,7 @@ jobs:
           docker load < built-image/hello_world.tar
       - name: Run image!
         run: |
-          docker ls
+          docker image ls
           docker run hello_world:$BRANCH_NAME
 
 
