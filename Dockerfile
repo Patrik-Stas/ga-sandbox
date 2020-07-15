@@ -1,10 +1,11 @@
 FROM ubuntu:18.04
 
-WORKDIR /tmp/dockertest
+RUN groupadd -g 1001 app && \
+    useradd -r -u 1001 -g app app
 
-CMD mkdir -p /tmp/dockertest
-CMD echo "hello111" > /tmp/dockertest/file1.txt
-CMD echo "hello222" > /tmp/dockertest/file2.txt
+WORKDIR /home/app/samplesrc
 
-#CMD ls -lah /tmp/dockertest
-CMD cat /tmp/dockertest/file1.txt
+COPY --chown=app:app ./samplesrc/file-bar.js ./file-bar.js
+#COPY --chown=app:app ./samplesrc/file-foo.js ./file-foo.js
+
+CMD ls -lah /home/app/samplesrc
