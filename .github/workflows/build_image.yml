@@ -121,6 +121,10 @@ jobs:
           echo "CACHE HIT, loading image!"
           ls -lah built-image/
           docker load < built-image/hello_world.tar
+      - name: If found in cache, run image.
+        if: steps.cache-image.outputs.cache-hit == 'true'
+        run: |
+          docker run hello_world:$BRANCH_NAME
       - name: Build image from Dockerfile
         run: |
           set -x

@@ -6,4 +6,4 @@ CMD mkdir foo3
 CMD mkdir foo3
 CMD mkdir foo4
 
-CMD echo hello
+CMD ls -lah
