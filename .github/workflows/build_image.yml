@@ -166,7 +166,7 @@ jobs:
           ls -lah /tmp/imgcache/
           docker load < /tmp/imgcache/hello_world.tar
           docker image ls
-      - name: Run image!!
+      - name: Run image!!!
         run: |
           set -x
           docker image ls
