@@ -123,7 +123,7 @@ jobs:
           echo "CACHE HIT! Key=$CACHE_KEY"
           ls -lah /tmp/imgcache
       - name: If NOT found in cache, Build and cache image.
-        if: steps.cache-image.outputs.cache-hit == 'false'
+        if: steps.cache-image.outputs.cache-hit != 'true'
         run: |
           echo "CACHE MISS!"
           set -x
