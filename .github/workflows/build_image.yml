@@ -117,6 +117,11 @@ jobs:
         with:
           path: /tmp/imgcache
           key: $CACHE_KEY
+      - name: If FOUND in cache, Print info.
+        if: steps.cache-image.outputs.cache-hit != 'true'
+        run: |
+          echo "CACHE HIT! Key=$CACHE_KEY"
+          ls -lah /tmp/imgcache
       - name: If NOT found in cache, Build and cache image.
         if: steps.cache-image.outputs.cache-hit != 'true'
         run: |
